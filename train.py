@@ -9,7 +9,7 @@ from sklearn.metrics import roc_auc_score
 from imblearn.metrics import geometric_mean_score
 from imblearn.over_sampling import SMOTE
 from imblearn.under_sampling import RandomUnderSampler
-# 采用 0-100的id来进行计算 公式算完之后，效果好的 拎出来
+
 # Define the objective function for optimization
 from sklearn.model_selection import GridSearchCV
 
@@ -29,7 +29,7 @@ class Trainer():
         self.min_class_filter_num = 10
         self.classes = -1
         self.class_label = []
-        self.class_amount = dict()##统计数据集最后一列  有几种  分别的数量
+        self.class_amount = dict()
         self.min_class_amount = min_class_filter_num
         self.max_class_amount = -1
         self.imbalance_ratio = 1
@@ -81,29 +81,29 @@ class Trainer():
         self.class_label.sort()
         self.classes = len(self.class_label)
         self.imbalance_ratio = float(l[l.keys()[-1]]) / float(self.min_class_amount)
-        df = df[~df[df.shape[1] - 1].isin(l.keys()[0:i])]#这是在验证什么。。。
-        df = df.sample(frac=1)#抽取行的比例 例如frac=0.8，就是抽取其中80%
-        df = df.reset_index(drop=True)#删掉原来的索引加了新的索引
+        df = df[~df[df.shape[1] - 1].isin(l.keys()[0:i])]
+        df = df.sample(frac=1)
+        df = df.reset_index(drop=True)
 
         _df = df.sample(frac=0.9)
-        df1 = df[~df.index.isin(_df.index)]#取df中_df没取的
-        df2 = _df.sample(frac=1.0/9.0)#取_df中1/9
-        df3 = _df[~_df.index.isin(df2.index)]#取_df中另外8/9
+        df1 = df[~df.index.isin(_df.index)]
+        df2 = _df.sample(frac=1.0/9.0)
+        df3 = _df[~_df.index.isin(df2.index)]
 
 
-        self.test_data = df1.iloc[:,:-1].to_numpy()#取df中_df没取的   测试集
-        self.test_label = df1.iloc[:,-1].to_numpy()#取df中_df没取的  的最后一列
-        self.validate_data = df2.iloc[:,:-1].to_numpy()#取_df中1/9   验证集
-        self.validate_label = df2.iloc[:,-1].to_numpy()#取_df中1/9   的最后一列
-        self.train_data = df3.iloc[:,:-1].to_numpy()#取_df中另外8/9   训练集
-        self.train_label = df3.iloc[:,-1].to_numpy()#取_df中另外8/9   的最后一列
+        self.test_data = df1.iloc[:,:-1].to_numpy()
+        self.test_label = df1.iloc[:,-1].to_numpy()
+        self.validate_data = df2.iloc[:,:-1].to_numpy()
+        self.validate_label = df2.iloc[:,-1].to_numpy()
+        self.train_data = df3.iloc[:,:-1].to_numpy()
+        self.train_label = df3.iloc[:,-1].to_numpy()
         self.train_id=list(range(len(self.train_data)))
         #self.train_data = _df.iloc[:,:-1].to_numpy()
         #self.train_label = _df.iloc[:,-1].to_numpy()
 
         print("Data preparation complete")
 
-#上面copy
+
 def change_back(listneedtochange, indexes):
     """apply indexes the list of index and create a sample vectors list to let the numbers in these location
     become 1 """
@@ -151,7 +151,7 @@ def float_to_int_no_repeat(floatlist,listlen):
 
 
 class WOATrainer(Trainer):
-    """侧重于WOA优化算法的class,也为整个程序的核心框架。通过WOA来寻求训练效果最好的sample，效果由Gmean和mAUC判定"""
+
     def __init__(self, grid, outputFile,min_class_filter_num, kernel,C,gamma,  max_iterations,stop_steps,sample_size,penalty,metrics):
         self.ensemble_sample = []
         self.updated_ensemble_sample = []
@@ -163,21 +163,21 @@ class WOATrainer(Trainer):
         self.sample_size = sample_size
         self.b = 1
         self.numofsample = 30
-        self.localopt = [] #局部最优的index list
-        self.globalopt = [] #全局最优的index list
+        self.localopt = [] 
+        self.globalopt = []
         self.best_iteration = 0
         self.best_ensemble_iteration = -1
         self.stop_steps = stop_steps
-        self.All_alternative_ensemble_solutions = []  # 存每次迭代中的train_id
+        self.All_alternative_ensemble_solutions = [] 
         self.iteration_num = 0
         super(WOATrainer,self).__init__(grid,outputFile,min_class_filter_num,kernel,C,gamma)
-        self.revise_choseone = 0.4  # 每次迭代取多少比例train_data  数据=<5时 使用0.8 ctg时=0.2
+        self.revise_choseone = 0.4  
         self.penalty = penalty
         self.metrics = metrics
         self.label_proba = None
 
     def initialization(self, num_of_sample):
-        """生成num_of_sample(人为设定)个带有处理好train data的woasvmtrainer,并把他们放入self.ensemble_sample这个list中"""
+        """produce num_of_sample(fixed) processed woasvmtrainer with training data,put them into list self.ensemble_sample"""
         print("AOW start initialization")
         self.numofsample = max(num_of_sample,1)
         print(self.numofsample)
@@ -192,7 +192,7 @@ class WOATrainer(Trainer):
             self.ensemble_sample.append(woasvmtrainer)
         # for j in range(1, len(self.class_label) + 1):
         #     a = np.array([i for i, x in enumerate(self.train_label) if x == j])
-        #     self.class_label_classify.append(a)  #将输入数据分类
+        #     self.class_label_classify.append(a) 
         # for i in range(0,len(self.train_data)):
         #     if self.train_label[i]==list(self.class_amount.keys())[0] or self.train_label[i]==list(self.class_amount.keys())[1]:
         #         self.Min_2_of_alternatives.append(self.train_id[i])
@@ -205,21 +205,21 @@ class WOATrainer(Trainer):
             self.iteration_num = i
             self.outputFileStream.write("WOA  iteration " + str(i) + "\n")
             print("WOA iteration", i, "start training")
-            self.trainByStep()  ### 用svm训练里面100个带有train data的psotrainers
-            total_num, correct_num, accuracy, g_mean, m_auc = self.validate() ###记录每个的训练效果
+            self.trainByStep()  
+            total_num, correct_num, accuracy, g_mean, m_auc = self.validate() 
             gmean = self.ensemble_sample[0].g_mean
             mauc = self.ensemble_sample[0].m_auc
             # if self.count_j>99:
 
             if self.metrics == "gmean":
                 # gmean = self.ensemble_sample[0].g_mean
-                for j in range(0, len(self.ensemble_sample)):  # 在这里找局部最优，最好的gmean那个100左右的训练数据集标签
+                for j in range(0, len(self.ensemble_sample)):  
                     if self.ensemble_sample[j].g_mean >= gmean:
                         gmean = self.ensemble_sample[j].g_mean
                         self.localopt = self.ensemble_sample[j].train_id
             elif self.metrics == "mauc":
                 # mauc = self.ensemble_sample[0].m_auc
-                for j in range(0, len(self.ensemble_sample)):  # 在这里找局部最优，最好的mavc那个100左右的训练数据集标签
+                for j in range(0, len(self.ensemble_sample)):  
                     if self.ensemble_sample[j].m_auc >= mauc:
                         mauc = self.ensemble_sample[j].m_auc
                         self.localopt = self.ensemble_sample[j].train_id
@@ -295,7 +295,7 @@ class WOATrainer(Trainer):
             #根据WOA更新性的index list
 
             self.updated_ensemble_sample=self.WOA(self.max_iterations,20, self.globalopt,i,self.ensemble_sample)
-            # 验证 updated_ensemble_sample中的index是否out of range 并修复
+            #  updated_ensemble_sample indexout of range 
             self.ensemble_sample = self.check_and_revise(self.updated_ensemble_sample)
             print("Choose samples for next iteration")
             #self.choose()
@@ -319,7 +319,7 @@ class WOATrainer(Trainer):
     def WOA(self,max_iterations, population_size, best_solution, t,population):
         """Accordng to the best_solution, we create new population(ensemble sample) by updating the whale(list)
         and add whales to population to produce new ensemble sample"(stands for the index), need to check if there
-        are indexs out of range总步骤 收缩包围"""
+        are indexs out of rang"""
         # Step 1: Initialize the whales population
         # population = np.zeros((population_size, 2))  # Each whale has 2 dimensions: C and gamma
         # t = 0
@@ -352,7 +352,7 @@ class WOATrainer(Trainer):
         return population
 
     def update_current_agent(self,best_solution,whale,a,population_size,population):
-        """WOA逻辑一 利用收缩包围机制和螺旋更新位置"""
+        """WOA1 to update"""
         # Step 3a: Update parameters a, A, C, l, and p
         emptysamplevector = np.full(self.train_label.shape[0],0)
         A = 2 * a * random.random() - a #exploration beharvior
@@ -377,7 +377,6 @@ class WOATrainer(Trainer):
                 D1 = float_to_int_no_repeat(D1,len(emptysamplevector))
                 whale.sample_vector = change_back(emptysamplevector,D1)
                 return whale
-                # 改成可用list表示的算式
             else:
                 # Eq. (7): Select random agent and update current agent
                 rand_whale_index = random.randint(0, population_size - 1)
@@ -433,12 +432,12 @@ class WOATrainer(Trainer):
                     xlist =[x for x in all_node_list if x not in updatesublist]
                     updatesublist.append(random.choice(xlist))
                 #finalre.append(updatesublist)
-            #print("check and revise checkkkkkkkkkkkkkkkkkk")
+            #print("check and revise checkk")
             #print(updatesublist)
             updateversion[sublistid].sample_vector = change_back(np.full(self.train_label.shape[0],0), updatesublist)
             return updateversion
 
-# cp的
+
     def choose(self):
         # self.outputFileStream.write("Print out label\n")
         # self.outputFileStream.write(str(self.train_label.tolist()))
